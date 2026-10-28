@@ -6,7 +6,7 @@
 
 ## Jugar
 
-**Demo en vivo: muy pronto en Vercel.** Mientras tanto, córrelo en local en dos minutos (ver [Córrelo en local](#córrelo-en-local)).
+**[Juega ahora: willys-por-colombia.vercel.app](https://willys-por-colombia.vercel.app)**
 
 Tres formas de jugar:
 

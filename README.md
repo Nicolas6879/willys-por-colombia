@@ -6,7 +6,7 @@
 
 ## Play
 
-**Live demo: coming soon on Vercel.** Meanwhile, run it locally in two minutes (see [Run it locally](#run-it-locally)).
+**[Play it now: willys-por-colombia.vercel.app](https://willys-por-colombia.vercel.app)**
 
 Three ways to play:
 
