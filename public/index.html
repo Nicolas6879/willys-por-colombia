@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Willys por Colombia - Lyria RealTime</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root { --ink: #3a2418; --cream: #fff4dc; --cream92: rgba(255, 244, 220, .92); --muted: #7a5a3c; --title: 'Fredoka', 'Trebuchet MS', system-ui, sans-serif; --text: 'Nunito', system-ui, 'Segoe UI', sans-serif; }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #ffc873; color: var(--ink); font: 700 14px var(--text); overscroll-behavior: none; touch-action: none; }
+  #view { position: fixed; inset: 0; }
+  #view canvas { display: block; width: 100%; height: 100%; }
+  /* vignette suave tipo maqueta (ESTILO 2.13: overlay CSS, coste cero de GPU) */
+  #vig { position: fixed; inset: 0; pointer-events: none; z-index: 1; background: radial-gradient(ellipse at 50% 52%, rgba(70, 40, 90, 0) 55%, rgba(70, 40, 90, .30) 100%); }
+  /* estilo "sticker" (ESTILO 2.14): crema, borde 3 px #3A2418, radio 18, sombra dura */
+  .sticker { background: var(--cream92); border: 3px solid var(--ink); border-radius: 18px; box-shadow: 0 4px 0 var(--ink); }
+  #hud { position: fixed; top: 12px; left: 12px; width: 300px; padding: 10px 14px 12px; z-index: 2; }
+  #hud.hidden, #fps.hidden, #minimap.hidden, #keys.hidden { display: none; }
+  #hud h1 { margin: 0 0 2px; font: 600 12px var(--title); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+  #region { font: 600 24px/1.1 var(--title); }
+  #sub { color: var(--muted); font-size: 12px; margin-bottom: 4px; }
+  .bar { display: flex; align-items: center; gap: 8px; margin: 4px 0; font-size: 12px; }
+  .bar .n { width: 64px; } .bar .t { flex: 1; height: 9px; background: rgba(58, 36, 24, .12); border: 2px solid var(--ink); border-radius: 6px; overflow: hidden; box-sizing: content-box; } .bar .f { height: 100%; width: 0; }
+  .bar .p { width: 34px; text-align: right; color: var(--muted); }
+  #chans { font: 600 11px ui-monospace, Consolas, monospace; color: var(--muted); white-space: pre; margin: 4px 0 2px; }
+  .row { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
+  button { background: #fff; color: var(--ink); border: 3px solid var(--ink); border-radius: 999px; padding: 3px 9px; cursor: pointer; white-space: nowrap; font: 700 12px var(--text); box-shadow: 0 3px 0 var(--ink); transition: transform .08s, box-shadow .08s; }
+  button:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--ink); }
+  button.on { background: #ffb347; }
+  #spd { margin-left: auto; width: 52px; height: 52px; flex: none; border-radius: 50%; border: 3px solid var(--ink); background: var(--cream); box-shadow: 0 3px 0 var(--ink); display: flex; flex-direction: column; align-items: center; justify-content: center; font: 600 20px/1 var(--title); font-variant-numeric: tabular-nums; }
+  #spd small { font: 700 9px var(--text); color: var(--muted); letter-spacing: .06em; }
+  #minimap { cursor: pointer; position: fixed; top: 12px; right: 12px; width: 180px; height: 180px; border-radius: 50%; border: 3px solid var(--ink); box-shadow: 0 4px 0 var(--ink); background: var(--cream); z-index: 2; }
+  /* mapa grande (N): fondo oscurecido y difuminado, el juego sigue debajo */
+  #bigmap { position: fixed; inset: 0; z-index: 3; display: none; align-items: center; justify-content: center; background: rgba(40, 22, 14, .45); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); }
+  #bigmap.show { display: flex; }
+  #bigmap .frame { position: relative; padding: 0; line-height: 0; overflow: hidden; background: var(--cream); }
+  #bigmap canvas { display: block; }
+  #bigmap .cap { position: absolute; bottom: 8px; right: 12px; font: 600 12px var(--title); letter-spacing: .08em; text-transform: uppercase; color: var(--cream); -webkit-text-stroke: 4px var(--ink); paint-order: stroke fill; line-height: 1.2; }
+  body.map-on #fps, body.map-on #note { display: none; } /* el mapa grande no se tapa con avisos */
+  #fps { position: fixed; top: 214px; right: 12px; font: 700 12px ui-monospace, Consolas, monospace; padding: 2px 10px; border-radius: 12px; z-index: 2; }
+  #keys { position: fixed; bottom: 12px; left: 12px; padding: 6px 12px; font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 10px; z-index: 2; }
+  /* ecualizador de 5 barras (rebota mientras suena la musica) */
+  .eq { display: inline-flex; align-items: flex-end; gap: 2px; height: 16px; }
+  .eq i { width: 4px; height: 4px; background: var(--ink); border-radius: 2px; }
+  body.on-air .eq i { animation: eq .7s ease-in-out infinite alternate; }
+  .eq i:nth-child(2) { animation-delay: -.2s; } .eq i:nth-child(3) { animation-delay: -.45s; } .eq i:nth-child(4) { animation-delay: -.1s; } .eq i:nth-child(5) { animation-delay: -.35s; }
+  @keyframes eq { from { height: 3px; } to { height: 16px; } }
+  #note { position: fixed; bottom: 14px; right: 14px; max-width: 40vw; padding: 3px 14px; border-radius: 999px; z-index: 2; font-size: 13px; }
+  #note:empty { display: none; }
+  /* tarjeta de region: arriba al centro, en el hueco entre el HUD (izq.) y el minimapa (der.): ancho = lo que cabe; si no cabe (< 960 px) el HUD se oculta mientras dura. Entra con "pop" de 280 ms */
+  #card { position: fixed; top: 14px; left: 50%; width: clamp(300px, calc(100vw - 664px), 520px); box-sizing: border-box; padding: 12px 18px 14px; text-align: center; visibility: hidden; pointer-events: none; z-index: 4; transform: translateX(-50%); }
+  #card.show { visibility: visible; animation: pop .28s cubic-bezier(.2, .9, .3, 1.2) both; }
+  @keyframes pop { 0% { transform: translateX(-50%) scale(.8); opacity: 0; } 70% { transform: translateX(-50%) scale(1.05); opacity: 1; } 100% { transform: translateX(-50%) scale(1); opacity: 1; } }
+  #card .g { font: 700 12px var(--text); text-transform: uppercase; letter-spacing: .1em; color: var(--muted); }
+  #card .z { font: 700 32px/1.05 var(--title); margin: 2px 0 4px; color: var(--accent, var(--ink)); -webkit-text-stroke: 6px var(--ink); paint-order: stroke fill; letter-spacing: .01em; }
+  #card .i { font-size: 14px; } #card .d { font-size: 13px; color: var(--muted); margin-top: 4px; }
+  /* enlace a la playlist de referencia: botoncito sticker; pointer-events auto porque #card lo desactiva */
+  #card .sp { display: inline-block; margin-top: 8px; padding: 3px 14px; font: 700 12px var(--text); color: var(--ink); background: #fff; border: 2px solid var(--ink); border-radius: 999px; box-shadow: 0 2px 0 var(--ink); text-decoration: none; pointer-events: auto; }
+  #card .sp:hover { background: #ffb347; } #card .sp:active { transform: translateY(2px); box-shadow: none; }
+  body.card-on #keys { opacity: 0; }
+  @media (max-width: 960px) { body.card-on #hud { display: none; } }
+  #start { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle at 50% 40%, rgba(255, 232, 196, .9), rgba(255, 190, 120, .95)); cursor: pointer; z-index: 5; }
+  #start .box { text-align: center; padding: 22px 34px 24px; max-width: min(520px, 88vw); display: flex; flex-direction: column; gap: 10px; }
+  #start b { font: 700 38px/1.05 var(--title); letter-spacing: .01em; } #start span { font-size: 16px; color: var(--muted); } #start small { font-size: 13px; color: var(--muted); }
+  #start .go { align-self: center; margin-top: 4px; padding: 6px 22px; font: 700 20px var(--title); background: #ffb347; border: 3px solid var(--ink); border-radius: 999px; box-shadow: 0 4px 0 var(--ink); }
+  /* API key del jugador (modo directo): bloque compacto en la pantalla de inicio, sin romper el responsive del box */
+  #keyset { display: flex; flex-direction: column; gap: 4px; text-align: left; }
+  #keyset label { font-size: 13px; color: var(--muted); }
+  #keyset #key { box-sizing: border-box; width: 100%; padding: 6px 12px; font: 700 16px var(--text); color: var(--ink); background: #fff; border: 3px solid var(--ink); border-radius: 12px; box-shadow: 0 3px 0 var(--ink); outline: none; cursor: text; }
+  #keyset #key.bad { border-color: #c8372d; box-shadow: 0 3px 0 #c8372d; background: #ffe3dd; }
+  #keyset .krem { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+  #keyset .krem input { width: 15px; height: 15px; margin: 0; accent-color: #ffb347; cursor: pointer; }
+  #keyset .khint, #keyset .kwarn { margin: 0; font-size: 12px; line-height: 1.35; color: var(--muted); }
+  #keyset .kwarn { color: #b04a20; }
+  #keyset .khint a { color: #b04a20; }
+  #keyset.need { animation: nudge .35s; }
+  @keyframes nudge { 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
+  /* pantalla de carga (sticker, ESTILO 2.14) */
+  #loading { position: fixed; inset: 0; z-index: 6; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle at 50% 40%, rgba(255, 232, 196, .96), rgba(255, 190, 120, .98)); transition: opacity .45s; }
+  #loading.done { opacity: 0; pointer-events: none; }
+  #loading .box { text-align: center; padding: 22px 38px 24px; width: min(420px, 84vw); box-sizing: border-box; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+  #loading b { font: 700 32px/1.05 var(--title); }
+  #loading svg { width: 150px; height: auto; animation: bounce .7s ease-in-out infinite alternate; }
+  #loading .bar { width: 100%; height: 16px; border: 3px solid var(--ink); border-radius: 999px; background: rgba(58, 36, 24, .12); overflow: hidden; box-sizing: border-box; }
+  #loading #lbar { height: 100%; width: 2%; background: repeating-linear-gradient(135deg, #ffb347 0 12px, #ffd27a 12px 24px); transition: width .25s; }
+  #loading #lmsg { font: 700 15px var(--text); color: var(--muted); }
+  #loading #lmsg::after { content: ''; display: inline-block; width: 1.2em; text-align: left; animation: dots 1.2s steps(4) infinite; }
+  @keyframes bounce { from { transform: translateY(0) rotate(-1.5deg); } to { transform: translateY(-8px) rotate(1.5deg); } }
+  @keyframes dots { 0% { content: ''; } 25% { content: '.'; } 50% { content: '..'; } 75% { content: '...'; } }
+  @media (max-width: 700px) { #hud { width: auto; right: 210px; } #keys { display: none; } }
+  /* ---- modo observador (boton ojo / tecla H): oculta todo el UI y deja solo el ojo y, en tactil, los controles de manejo atenuados ---- */
+  #eye { position: fixed; top: 12px; left: 322px; width: 48px; height: 48px; padding: 0; z-index: 3; display: flex; align-items: center; justify-content: center; border: 3px solid var(--ink); border-radius: 50%; background: var(--cream92); box-shadow: 0 4px 0 var(--ink); color: var(--ink); cursor: pointer; touch-action: none; -webkit-tap-highlight-color: transparent; transition: opacity .15s; }
+  #eye svg { width: 28px; height: 28px; display: block; } #eye .off { display: none; }
+  #eye:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
+  body.observer #eye { left: 12px; width: 44px; height: 44px; opacity: .35; } body.observer #eye:hover, body.observer #eye:active, body.observer #eye:focus-visible { opacity: 1; }
+  body.observer #eye .on { display: none; } body.observer #eye .off { display: block; }
+  body.observer #hud, body.observer #minimap, body.observer #keys, body.observer #note, body.observer #card, body.observer #ttop { display: none !important; }
+  body.observer #tbase, body.observer #tped, body.observer #tarrows, body.observer #thand { opacity: .45; }
+  @media (max-width: 960px) { body.card-on:not(.observer) #eye { left: 12px; } }
+  @media (max-width: 700px) { #hud { right: 260px; } body:not(.observer) #eye { left: auto; right: 204px; } }
+  /* ---- HUD compacto en tactil: solo region + barras de mezcla (+ velocimetro chico fuera del panel); minimapa mas chico ---- */
+  body.touch #hud { width: 220px; right: auto; padding: 6px 10px 8px; }
+  body.touch #hud h1, body.touch #sub, body.touch #chans, body.touch #mem, body.touch #pause { display: none; }
+  body.touch #region { font-size: 19px; }
+  body.touch .bar { margin: 2px 0; font-size: 11px; } body.touch .bar .n { width: 56px; } body.touch .bar .p { width: 30px; }
+  body.touch .row { position: fixed; top: 12px; left: 50%; transform: translateX(-50%); margin: 0; z-index: 2; }
+  body.touch #spd { width: 44px; height: 44px; margin: 0; }
+  body.touch #minimap { width: 140px !important; height: 140px !important; }
+  body.touch:not(.observer) #eye { left: 242px; right: auto; }
+  @media (max-width: 960px) { body.touch.card-on:not(.observer) #eye { left: 12px; } }
+  /* ---- modo sin key: boton de inicio y reproductor de Spotify ---- */
+  #nk { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  #nk button { font: 700 14px var(--text); padding: 5px 16px; background: #fff; }
+  #nk small { font-size: 12px; }
+  #sp { display: none; position: fixed; left: 12px; bottom: 56px; z-index: 2; flex-direction: column; align-items: flex-start; gap: 8px; touch-action: none; }
+  body.nokey #sp { display: flex; }
+  body.nokey #mem, body.nokey #chans { display: none; }
+  #spbody { width: 316px; box-sizing: border-box; padding: 8px 10px 10px; touch-action: auto; }
+  #spbody .sph { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
+  #spbody .sph b { font: 600 14px var(--title); } #spbody .sph button { font-size: 11px; min-height: 28px; }
+  #spwrap { height: 152px; border-radius: 12px; overflow: hidden; } #spwrap iframe { display: block; width: 100%; height: 152px; border: 0; }
+  #spbody .spf { display: flex; flex-direction: column; gap: 2px; margin-top: 6px; font-size: 12px; }
+  #spbody .spf a { color: #b04a20; } #spbody .spf small { font-size: 11px; color: var(--muted); }
+  #spbtn { width: 48px; height: 48px; padding: 0; display: flex; align-items: center; justify-content: center; border-radius: 50%; color: var(--ink); cursor: pointer; touch-action: none; }
+  #spbtn svg { width: 26px; height: 26px; }
+  /* plegado: el embed sigue vivo (sin display:none, la musica no se corta), solo invisible y sin clics */
+  #sp.fold #spbody { position: absolute; left: 0; bottom: 56px; opacity: 0; pointer-events: none; }
+  body.observer #sp { opacity: 0; pointer-events: none; }
+  /* celular: boton de nota junto al ojo; plegado por defecto; desplegado = ventanita bajo la fila superior */
+  body.touch #sp { left: 296px; top: 12px; bottom: auto; z-index: 4; }
+  body.touch #spbody { position: absolute; top: 56px; left: -284px; }
+  body.touch #sp.fold #spbody { top: 56px; bottom: auto; }
+  /* ---- controles tactiles (los crea touch.js; solo visibles con body.touch; dos modos: tm-joystick / tm-flechas) ---- */
+  #tz, #tbase, #tped, #ttop, #thand, #tarrows { display: none; }
+  body.touch #ttop { display: grid; }
+  body.touch #thand { display: flex; }
+  body.touch.tm-joystick #tz, body.touch.tm-joystick #tbase { display: block; }
+  body.touch.tm-flechas #tped, body.touch.tm-flechas #tarrows { display: flex; }
+  body.touch #keys, body.touch #mem, body.touch #pause { display: none; } /* reemplazados por los botones tactiles */
+  body.touch, body.touch * { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
+  #tz, #tbase, #tpuck, #tped, #ttop, #thand, #tarrows, .tbtn { touch-action: none; }
+  #tz { position: fixed; left: 0; bottom: 0; width: 50%; height: 100%; z-index: 1; }
+  /* joystick flotante: fantasma fijo abajo-izquierda; al tocar, la base salta bajo el dedo (clase .live) */
+  #tbase { position: fixed; left: 104px; bottom: calc(92px + env(safe-area-inset-bottom)); width: 132px; height: 132px; margin: 0; transform: translate(-50%, 50%); border-radius: 50%; border: 3px dashed rgba(58, 36, 24, .5); background: rgba(255, 244, 220, .22); opacity: .6; z-index: 1; pointer-events: none; }
+  #tbase.live { transform: translate(-50%, -50%); opacity: .9; background: rgba(255, 244, 220, .35); }
+  #tpuck { position: absolute; left: 50%; top: 50%; width: 68px; height: 68px; border-radius: 50%; border: 3px solid var(--ink); background: rgba(255, 244, 220, .8); box-shadow: 0 4px 0 var(--ink); will-change: transform; }
+  .tbtn { display: flex; align-items: center; justify-content: center; text-align: center; box-sizing: border-box; border: 3px solid var(--ink); border-radius: 999px; background: rgba(255, 244, 220, .72); box-shadow: 0 4px 0 var(--ink); font: 700 15px var(--title); color: var(--ink); cursor: pointer; }
+  .tbtn.on { background: #ffb347; }
+  .tbtn.act { background: #ffb347; transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
+  /* freno de mano: unico boton de manejo del modo joystick (grande, abajo-derecha); en flechas se corre a la izquierda de los pedales */
+  #thand { position: fixed; right: 20px; bottom: calc(20px + env(safe-area-inset-bottom)); width: 92px; height: 92px; z-index: 2; font-size: 14px; line-height: 1.05; padding: 6px; }
+  body.tm-flechas #thand { right: 250px; bottom: calc(24px + env(safe-area-inset-bottom)); width: 72px; height: 72px; font-size: 12px; }
+  /* flechas: abajo-izquierda */
+  #tarrows { position: fixed; left: 16px; bottom: calc(20px + env(safe-area-inset-bottom)); z-index: 2; gap: 14px; }
+  #tleft, #tright { width: 84px; height: 84px; font-size: 28px; }
+  /* pedales del modo flechas: abajo-derecha, freno arriba y acelerar abajo */
+  #tped { position: fixed; right: 16px; bottom: calc(16px + env(safe-area-inset-bottom)); z-index: 2; flex-direction: row; align-items: flex-end; gap: 12px; } /* freno a la izquierda de acelerar, lado a lado */
+  #tbrake { width: 100px; height: 64px; font-size: 13px; line-height: 1.05; }
+  #tgas { width: 110px; height: 88px; }
+  /* acciones (mapa/memoria/pausa/modo): rejilla 2x2 bajo el minimapa */
+  #ttop { position: fixed; right: 12px; top: 162px; z-index: 2; grid-template-columns: repeat(2, 1fr); gap: 6px; }
+  #ttop .tbtn svg { width: 16px; height: 16px; flex: none; }
+  #ttop .tbtn { min-width: 84px; height: 34px; gap: 4px; padding: 0 8px; font: 700 12px var(--text); }
+  @media (max-height: 430px) { #ttop .tbtn { height: 34px; } body.tm-joystick #thand { width: 84px; height: 84px; bottom: calc(12px + env(safe-area-inset-bottom)); } #tbase { bottom: calc(80px + env(safe-area-inset-bottom)); } }
+  /* aviso en vertical: el juego es para horizontal (solo con tactil activo; el PC no se bloquea) */
+  #rotate { display: none; }
+  @media (orientation: portrait) {
+    body.touch #rotate { position: fixed; inset: 0; z-index: 50; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 24px; box-sizing: border-box; text-align: center; background: rgba(255, 200, 115, .94); color: var(--ink); font: 600 28px var(--title); touch-action: none; }
+    body.touch #rotate small { font: 700 15px var(--text); color: var(--muted); }
+    body.touch #rotate .ic { font-size: 56px; display: inline-block; animation: tilt 1.6s ease-in-out infinite alternate; }
+  }
+  @keyframes tilt { from { transform: rotate(0); } to { transform: rotate(-90deg); } }
+</style>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+</head>
+<body>
+<div id="view"></div>
+<div id="vig"></div>
+<canvas id="minimap" title="Mapa grande (N)"></canvas>
+<div id="bigmap"><div class="frame sticker"><canvas></canvas><div class="cap">N o Esc cierra</div></div></div>
+<button id="eye" type="button" title="Ocultar / mostrar la interfaz (H)" aria-label="Modo observador"><svg class="on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 12S5.5 5 12 5s10.5 7 10.5 7-4 7-10.5 7S1.5 12 1.5 12z"/><circle cx="12" cy="12" r="3.2" fill="currentColor"/></svg><svg class="off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 12S5.5 5 12 5s10.5 7 10.5 7-4 7-10.5 7S1.5 12 1.5 12z"/><circle cx="12" cy="12" r="3.2"/><path d="M3.5 3.5l17 17"/></svg></button>
+<div id="hud" class="sticker">
+  <h1>Willys por Colombia</h1>
+  <div id="region">-</div>
+  <div id="sub">&nbsp;</div>
+  <div id="bars"></div>
+  <div id="chans"></div>
+  <div class="row">
+    <button id="mem" class="on">Memoria: si (M)</button>
+    <button id="pause">Pausa (P)</button>
+    <span id="spd"><span>0</span><small>km/h</small></span>
+  </div>
+</div>
+<div id="fps" class="sticker hidden"></div>
+<div id="rotate"><span class="ic">📱</span><span>Gira el celular</span><small>Willys se maneja en horizontal</small></div>
+<div id="keys" class="sticker"><span class="eq"><i></i><i></i><i></i><i></i><i></i></span><span>WASD / flechas conducir &middot; Espacio freno de mano &middot; N mapa &middot; M memoria &middot; P pausa &middot; H / ojo: modo observador (oculta la interfaz) &middot; T hora &middot; F fps</span></div>
+<div id="sp"><div id="spbody" class="sticker"><div class="sph"><b id="sptitle">Spotify</b><button id="spauto" type="button" class="on">Cambiar con la region: si</button></div><div id="spwrap"><div id="spembed"></div></div><div class="spf"><a id="splink" href="https://open.spotify.com/" target="_blank" rel="noopener">Abrir en Spotify</a><small>Sin sesi&oacute;n de Spotify suenan vistas previas de 30 s</small></div></div><button id="spbtn" type="button" class="sticker" title="Musica (Spotify)" aria-label="Musica de Spotify" aria-expanded="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l11-2v13"/><circle cx="6.5" cy="18" r="3" fill="currentColor"/><circle cx="17.5" cy="16" r="3" fill="currentColor"/></svg></button></div>
+<div id="card" class="sticker"></div>
+<div id="note" class="sticker"></div>
+<div id="loading"><div class="box sticker"><b>Willys por Colombia</b>
+  <svg viewBox="0 0 150 90" aria-hidden="true"><ellipse cx="75" cy="83" rx="56" ry="5" fill="rgba(58,36,24,.25)"/>
+    <g stroke="#3A2418" stroke-width="4" stroke-linejoin="round"><rect x="26" y="34" width="98" height="32" rx="8" fill="#C8372D"/><rect x="86" y="24" width="38" height="18" rx="4" fill="#C8372D"/>
+    <path d="M30 34 L40 14 L82 14 L86 34 Z" fill="#F5E8C8"/><rect x="26" y="52" width="98" height="6" fill="#F5E8C8"/>
+    <circle cx="48" cy="68" r="12" fill="#3A3A3F"/><circle cx="104" cy="68" r="12" fill="#3A3A3F"/><circle cx="48" cy="68" r="4" fill="#E9EDF2"/><circle cx="104" cy="68" r="4" fill="#E9EDF2"/></g></svg>
+  <div class="bar"><div id="lbar"></div></div><div id="lmsg">Armando Colombia</div></div></div>
+<div id="start"><div class="box sticker"><b>Willys por Colombia</b><span>Maneja el Willys por las 6 regiones de Colombia y escucha c&oacute;mo cambia la m&uacute;sica</span><div id="keyset">
+  <label for="key">Tu API key de Google (Gemini)</label>
+  <input id="key" type="password" autocomplete="off" spellcheck="false" placeholder="Pega tu API key">
+  <label class="krem"><input id="remember" type="checkbox"> Recordar en este equipo</label>
+  <p class="khint">Consigue una gratis en <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Google AI Studio</a> (~2 min). Se guarda solo en tu navegador; si no marcas recordar, se borra al cerrar la pestaña.</p>
+  <p class="kwarn">La extensión de otro programa podría leerla: usa una key creada solo para esto y bórrala cuando termines.</p>
+</div><div id="nk"><button id="nokey" type="button">Jugar sin key (m&uacute;sica de Spotify)</button><small>Sin Lyria: manejas igual y suenan las playlists de cada regi&oacute;n.</small></div><div class="go">Clic o toca para empezar</div><small>WASD / flechas &middot; Espacio = freno de mano &middot; T cambia la hora del d&iacute;a</small></div></div>
+<script type="module" src="game.js"></script>
+</body>
+</html>

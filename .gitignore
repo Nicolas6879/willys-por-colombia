@@ -1,0 +1,20 @@
+# secrets
+.env
+.env.*
+!.env.example
+
+# deps
+node_modules/
+
+# runtime logs and generated experiment output (WAVs, screenshots, jsonl)
+logs/
+*.log
+*.wav
+experiments/out/
+
+# OS / editor / tooling
+.DS_Store
+Thumbs.db
+.claude/
+.vscode/
+.idea/

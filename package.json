@@ -1,0 +1,35 @@
+{
+  "name": "mapa-lyria",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "node server.mjs",
+    "static": "node serve-static.mjs",
+    "test": "node test-audio-core.mjs && node test-protocol.mjs && node test-memory.mjs && node test-session-state.mjs && node test-sections.mjs && node test-reactive.mjs && node test-vehicle.mjs && node test-colliders.mjs && node test-world.mjs && node test-daycycle.mjs && node test-geomap.mjs && node test-bigmap.mjs && node test-perf.mjs && node test-drive-sim.mjs && node test-handover.mjs && node test-key-store.mjs && node test-local-link.mjs && node test-touch.mjs && node test-spotify.mjs",
+    "test:real": "node test-real.mjs"
+  },
+  "keywords": [
+    "lyria",
+    "lyria-realtime",
+    "gemini",
+    "threejs",
+    "webaudio",
+    "generative-music",
+    "adaptive-music",
+    "colombia"
+  ],
+  "author": "",
+  "license": "MIT",
+  "description": "Willys por Colombia: a toy-diorama driving game where Lyria RealTime music drifts on the road and every region remembers its own theme.",
+  "type": "module",
+  "dependencies": {
+    "@google/genai": "^2.29.1",
+    "ws": "^8.22.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Nicolas6879/willys-por-colombia.git"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

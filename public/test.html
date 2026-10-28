@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Mapa Lyria - prueba de audio</title>
+<style>
+  body { font: 15px system-ui, sans-serif; max-width: 760px; margin: 24px auto; padding: 0 12px; background: #14161a; color: #e6e6e6; }
+  h1 { font-size: 18px; }
+  .row { margin: 12px 0; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  button { background: #2a2f38; color: inherit; border: 1px solid #444b58; border-radius: 6px; padding: 6px 12px; cursor: pointer; }
+  button.sel { background: #3b6ea8; border-color: #5b8fc8; }
+  button:disabled { opacity: .4; cursor: default; }
+  pre { background: #0d0f12; padding: 10px; border-radius: 6px; min-height: 5em; white-space: pre-wrap; }
+  input[type=range] { width: 260px; }
+</style>
+</head>
+<body>
+<h1>Mapa Lyria - prueba de audio (fase 1)</h1>
+<div class="row"><b>Destino:</b> <span id="places"></span></div>
+<div class="row">
+  <span>Origen: <b id="origin">-</b></span>
+  <label>Mezcla origen &rarr; destino <input id="mix" type="range" min="0" max="1" step="0.01" value="0"></label>
+  <span id="mixv">0.00</span>
+  <button id="travel">Viajar</button>
+</div>
+<div class="row">
+  <button id="prewarm">Pre-calentar recall de ...</button>
+  <button id="enter">Entrar a ...</button>
+  <label><input id="memory" type="checkbox" checked> Memoria</label>
+  <button id="pause">Pausa</button>
+  <label>Volumen <input id="vol" type="range" min="0" max="1" step="0.01" value="0.6"></label>
+</div>
+<pre id="status">Pulsa "Viajar" para empezar (el navegador necesita un gesto para activar el audio).</pre>
+<script type="module" src="test.js"></script>
+</body>
+</html>

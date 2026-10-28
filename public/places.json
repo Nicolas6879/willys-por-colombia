@@ -1,0 +1,225 @@
+{
+  "_nota": "Prompts y seeds elegidos por Nico de oido (fase 0), rediseñados en la ronda 3 (experiments/RONDA3.md): `prompt` = ancla corta fija (genero + 2-3 instrumentos); `sections` = capas (instrumento / mood) que se suman con peso bajo y mueven la base de density/brightness. Los prompts y secciones anteriores quedan en `prompt_v1` / `sections_v1` (y `bpm_v1`) para volver atras. Misma seed + mismo prompt + misma config = mismo audio: es la 'memoria' de cada lugar.",
+  "places": [
+    {
+      "id": "caribe",
+      "name": "Caribe",
+      "prompt": "Vallenato cumbia, accordion, caja drum, guacharaca, instrumental",
+      "seed": 7,
+      "bpm": 96,
+      "scale": "G_MAJOR_E_MINOR",
+      "density": 0.5,
+      "brightness": 0.6,
+      "alt_seeds": [
+        11
+      ],
+      "source": "a8-caribe-v1-s7.wav",
+      "sections": [
+        {
+          "name": "solo",
+          "layer": "instrument",
+          "text": "gaita flute melody, tambora drum, maracas",
+          "weight": 0.4,
+          "density": 0.1,
+          "brightness": 0.05
+        },
+        {
+          "name": "breakdown",
+          "layer": "mood",
+          "text": "soft ambient pads, sparse percussion, warm sea breeze",
+          "weight": 0.5,
+          "density": -0.3,
+          "brightness": -0.05
+        }
+      ],
+      "spotify": "4nKQboO11Kz73pNOeNCqoF",
+      "prompt_v1": "vallenato, diatonic button accordion playing a lively melody, caja vallenata drum, guacharaca scraper rhythm, bass guitar, upbeat Colombian Caribbean folk, instrumental only, no vocals, no singing",
+      "bpm_v1": null,
+      "sections_v1": [
+        "accordion solo with fast ornamented runs",
+        "full band chorus, caja and guacharaca more intense"
+      ]
+    },
+    {
+      "id": "pacifico",
+      "name": "Pacífico",
+      "prompt": "Currulao, marimba de chonta, bombo drum, cununo drums",
+      "seed": 7,
+      "bpm": 116,
+      "scale": "F_MAJOR_D_MINOR",
+      "density": 0.5,
+      "brightness": 0.45,
+      "source": "a2-pacifico-1.wav",
+      "sections": [
+        {
+          "name": "solo",
+          "layer": "instrument",
+          "text": "fast marimba patterns, guasa shaker, call and response chant",
+          "weight": 0.4,
+          "density": 0.1,
+          "brightness": 0.05
+        },
+        {
+          "name": "breakdown",
+          "layer": "mood",
+          "text": "rainforest ambience, soft spacious marimba, hypnotic and warm",
+          "weight": 0.5,
+          "density": -0.3,
+          "brightness": -0.05
+        }
+      ],
+      "spotify": "6IBpUAb1JxbGbDUI3ufd4a",
+      "prompt_v1": "Afro-Colombian Pacific folk, resonant wooden marimba de chonta playing a repeating ostinato, deep bombo bass drum on a rolling 6/8 groove, male and female cununo drums, guasa bamboo shaker, call and response chorus chant, earthy rainforest feel",
+      "bpm_v1": null,
+      "sections_v1": [
+        "marimba de chonta solo with fast rolling patterns",
+        "full call and response chorus, bombo and cununos more intense"
+      ]
+    },
+    {
+      "id": "santander",
+      "name": "Santander",
+      "prompt": "Bambuco, tiple, bandola, acoustic guitar",
+      "seed": 7,
+      "bpm": 112,
+      "scale": "G_MAJOR_E_MINOR",
+      "density": 0.4,
+      "brightness": 0.5,
+      "source": "a2-santander-2.wav",
+      "sections": [
+        {
+          "name": "solo",
+          "layer": "instrument",
+          "text": "requinto lead melody, bandola tremolo solo",
+          "weight": 0.4,
+          "density": 0.1,
+          "brightness": 0.05
+        },
+        {
+          "name": "breakdown",
+          "layer": "mood",
+          "text": "tender and nostalgic, sparse plucked strings, warm ambient room",
+          "weight": 0.5,
+          "density": -0.2,
+          "brightness": -0.05
+        }
+      ],
+      "spotify": "72uVKpMHHBQ8B6BCxHyFU7",
+      "prompt_v1": "Andean guabina, lyrical and melancholic, tiple and requinto duet, plucked bandola with tremolo, guitar accompaniment, slow lamenting mood, rustic rural acoustic recording",
+      "bpm_v1": null,
+      "sections_v1": [
+        "requinto solo melody, sparse and tender",
+        "full ensemble, tiple strumming stronger, bandola tremolo lead"
+      ]
+    },
+    {
+      "id": "llanos",
+      "name": "Llanos",
+      "prompt": "Joropo, arpa llanera harp, cuatro, maracas",
+      "seed": 7,
+      "bpm": 120,
+      "scale": "D_MAJOR_B_MINOR",
+      "density": 0.55,
+      "brightness": 0.6,
+      "source": "a-llanos-2.wav",
+      "sections": [
+        {
+          "name": "solo",
+          "layer": "instrument",
+          "text": "virtuosic harp runs, cuatro strumming harder",
+          "weight": 0.4,
+          "density": 0.1,
+          "brightness": 0.05
+        },
+        {
+          "name": "breakdown",
+          "layer": "mood",
+          "text": "open plains at dusk, gentle slow harp, spacious ambient pads",
+          "weight": 0.5,
+          "density": -0.35,
+          "brightness": -0.05
+        }
+      ],
+      "spotify": "4qS4pHQE04evHUzox2hjBw",
+      "prompt_v1": "Venezuelan-Colombian plains joropo, arpa llanera harp melody, cuatro strumming, maracas driving rhythm, energetic galloping, instrumental",
+      "bpm_v1": null,
+      "sections_v1": [
+        "arpa llanera solo with fast virtuosic runs",
+        "full band, cuatro and maracas driving harder, festive peak"
+      ]
+    },
+    {
+      "id": "cali",
+      "name": "Cali",
+      "prompt": "Salsa, brass section, piano montuno, congas",
+      "seed": 7,
+      "bpm": 124,
+      "scale": "C_MAJOR_A_MINOR",
+      "density": 0.6,
+      "brightness": 0.65,
+      "source": "a-cali-3.wav",
+      "sections": [
+        {
+          "name": "solo",
+          "layer": "instrument",
+          "text": "trumpet and trombone mambo brass, timbales fills",
+          "weight": 0.4,
+          "density": 0.1,
+          "brightness": 0.05
+        },
+        {
+          "name": "breakdown",
+          "layer": "mood",
+          "text": "smooth electric piano, soft vibraphone pads, laid-back, sparse percussion",
+          "weight": 0.5,
+          "density": -0.4,
+          "brightness": -0.05
+        }
+      ],
+      "spotify": "0rBAzF0Rb6zb2kGNQVpMsg",
+      "prompt_v1": "Colombian salsa band instrumental, tight brass arrangement, montuno piano, congas, timbales, driving bass, fast and festive",
+      "bpm_v1": null,
+      "sections_v1": [
+        "piano montuno solo with congas break",
+        "full brass mambo section, timbales fills, intense climax"
+      ]
+    },
+    {
+      "id": "medellin",
+      "name": "Medellín",
+      "prompt": "Colombian guaracha, Latin tribal house, congas, trumpet synth lead",
+      "seed": 11,
+      "bpm": 128,
+      "scale": "C_MAJOR_A_MINOR",
+      "density": 0.6,
+      "brightness": 0.6,
+      "source": "a7-melodic-s11.wav",
+      "sections": [
+        {
+          "name": "solo",
+          "layer": "instrument",
+          "text": "rising synth lead, extra percussion and timbales",
+          "weight": 0.4,
+          "density": 0.1,
+          "brightness": 0.05
+        },
+        {
+          "name": "breakdown",
+          "layer": "mood",
+          "text": "filtered warm pads, atmospheric breakdown, minimal percussion",
+          "weight": 0.5,
+          "density": -0.4,
+          "brightness": -0.05
+        }
+      ],
+      "spotify": "3g4NM902tQmcwiuxsefq0Y",
+      "prompt_v1": "Elegant melodic afro house for a Latin club, organic percussion with congas and shakers, hypnotic rolling bass, emotive warm pads, memorable plucked synth melody with Latin flavor, tasteful build and smooth uplifting drop, polished modern production, 122 bpm",
+      "bpm_v1": 122,
+      "sections_v1": [
+        "breakdown with filtered pads and vocal-less atmosphere",
+        "energetic peak with extra percussion and rising synth lead"
+      ]
+    }
+  ],
+  "_sections": "Secciones dentro de la region (ciclo de 90 s desde el promote/inicio): solo ancla (peso 1) hasta +25 s; +25 s capa de instrumento ('solo'); +50 s capa de mood ('breakdown': pads/ambiente arriba, density base ~0.2); +70 s solo ancla. weight = peso de la capa; density/brightness = desplazamiento de la base musical (la velocidad modula alrededor, reactive.js). Lugares: density/brightness = base; bpm/scale se fijan antes de play()."
+}

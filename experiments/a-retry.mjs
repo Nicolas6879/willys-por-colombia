@@ -1,0 +1,11 @@
+import fs from 'node:fs'; import path from 'node:path';
+import { open, record, prompts, config, P, OUT } from './common.mjs';
+import { pcmToMono, slice, writeWav, chroma, detectKey, tempo, centroid } from './analyze.mjs';
+const text = process.argv[2];
+const h = await open({ onMsg: (m) => { if (m.filteredPrompt) filtered.push(m.filteredPrompt); } }); var filtered = [];
+await prompts(h.session, [P(text)]); await config(h.session, { seed: 7 }); await h.session.play(); await record(h, 25);
+const buf = h.buf(); h.session.close();
+if (h.pos() > 5) writeWav(path.join(OUT, 'a-medellin-2.wav'), buf);
+const mono = pcmToMono(slice(buf, 4, 25)), k = detectKey(chroma(mono).mean), t = tempo(mono);
+const o = { reg: 'medellin', n: '2-reintento', prompt: text, filtered: filtered.map(f=>f.filteredReason?'filtrado':f), secs: +h.pos().toFixed(1), tempo: t.bpm, tempoHalf: t.half?.bpm, tempoDouble: t.double?.bpm, tconf: t.confidence, key: k.key, kconf: +k.confidence.toFixed(2), centroid: Math.round(centroid(mono)) };
+console.log(JSON.stringify(o)); fs.appendFileSync(path.join(OUT, 'a.jsonl'), JSON.stringify(o) + '\n');
